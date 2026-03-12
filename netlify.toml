@@ -1,1 +1,38 @@
+[build]
+  publish   = "admin"
+  functions = "netlify/functions"
+  command   = "npm install"
+
+[functions]
+  node_bundler = "esbuild"
+  included_files = ["bot/**", "config/**"]
+
+# Webhook de WhatsApp
+[[redirects]]
+  from   = "/webhook"
+  to     = "/.netlify/functions/webhook"
+  status = 200
+
+# API de leads
+[[redirects]]
+  from   = "/api/leads"
+  to     = "/.netlify/functions/leads"
+  status = 200
+
+# Enviar mensajes
+[[redirects]]
+  from   = "/api/send"
+  to     = "/.netlify/functions/send"
+  status = 200
+
+[[headers]]
+  for = "/*"
+  [headers.values]
+    X-Frame-Options      = "DENY"
+    X-Content-Type-Options = "nosniff"
+    Referrer-Policy      = "strict-origin-when-cross-origin"
+
+[dev]
+  command = "echo 'Dev server listo'"
+  port    = 8888
 
