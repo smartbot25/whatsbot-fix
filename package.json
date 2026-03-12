@@ -1,1 +1,20 @@
+{
+  "name": "whatsbot-fix",
+  "version": "1.0.0",
+  "description": "WhatsApp Bot con Meta API — Ed-Fix Digital Suite",
+  "main": "netlify/functions/webhook.js",
+  "scripts": {
+    "dev": "netlify dev",
+    "deploy": "netlify deploy --prod"
+  },
+  "dependencies": {
+    "node-fetch": "^2.7.0"
+  },
+  "engines": {
+    "node": "18"
+  },
+  "keywords": ["whatsapp", "bot", "meta-api", "edfix"],
+  "author": "Edgar — Ed-Fix Digital",
+  "license": "UNLICENSED"
+}
 
