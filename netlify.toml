@@ -1,5 +1,5 @@
 [build]
-  publish   = "admin"
+  publish   = "."  # IMPORTANTE: El punto significa "toda la raíz"
   functions = "netlify/functions"
   command   = "npm install"
 
@@ -7,10 +7,22 @@
   node_bundler = "esbuild"
   included_files = ["bot/**", "config/**"]
 
+# Redirección para el Panel de Leads (Opcional pero recomendado)
+[[redirects]]
+  from   = "/leads"
+  to     = "/admin.html"
+  status = 200
+
 # Webhook de WhatsApp
 [[redirects]]
   from   = "/webhook"
   to     = "/.netlify/functions/webhook"
+  status = 200
+
+# Redirección para las funciones de la API
+[[redirects]]
+  from   = "/api/*"
+  to     = "/.netlify/functions/:splat"
   status = 200
 
 # API de leads
