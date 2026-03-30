@@ -26,13 +26,14 @@ async function saveLead(leadData) {
           },
           body: JSON.stringify({
             name:          name || 'Sin nombre',
-            phone:         phone,
-            query:         query || '',
+            wa_id:         phone, // <-- ANTES DECÍA "phone", AHORA "wa_id"
+            interest:      query || '', // <-- ANTES DECÍA "query", AHORA "interest"
             business_name: businessName || BOT_CONFIG.business.name,
             source:        'whatsapp_bot',
             status:        'new',
             created_at:    new Date().toISOString(),
           }),
+
         }
       );
 
