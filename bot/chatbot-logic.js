@@ -1,22 +1,19 @@
-
 /**
- * WhatsBot-Fix — Cerebro del Bot
- * Lógica de respuestas: reglas + Gemini IA
+ * WhatsBot-Fix — El Cerebro de SmartBot Perú 🚀
+ * Lógica de ventas: Reglas de Negocio + Inteligencia Artificial Gemini
  */
 
 const BOT_CONFIG = require('../config/bot-config');
 
-// ─── Estado de sesiones en memoria ───────────────────────────
-// (En producción con Supabase se persiste en BD)
 const sessions = new Map();
 
 function getSession(phone) {
   if (!sessions.has(phone)) {
     sessions.set(phone, {
       phone,
-      step: 'idle',         // idle | collecting_name | collecting_query | done
+      step: 'idle',
       name: null,
-      query: null,
+      businessType: null,
       messageCount: 0,
       firstContact: new Date().toISOString(),
       lastContact: new Date().toISOString(),
@@ -34,162 +31,96 @@ function updateSession(phone, updates) {
   sessions.set(phone, s);
 }
 
-// ─── Procesador principal ────────────────────────────────────
+// ─── PROCESADOR PRINCIPAL ────────────────────────────────────
 async function processMessage(phoneFrom, messageText, messageType = 'text') {
-  const msg     = (messageText || '').toLowerCase().trim();
+  const msg = (messageText || '').toLowerCase().trim();
   const session = getSession(phoneFrom);
-  const biz     = BOT_CONFIG.business;
+  const biz = BOT_CONFIG.business;
 
-  console.log(`[Bot] De: ${phoneFrom} | Msg: "${messageText}" | Step: ${session.step}`);
+  console.log(`[SmartBot] De: ${phoneFrom} | Msg: "${messageText}" | Step: ${session.step}`);
 
-  // Mensajes no-texto (imagen, audio, etc.)
   if (messageType !== 'text') {
     return buildResponse([
-      `Recibí tu ${messageType === 'image' ? 'imagen 📷' : messageType === 'audio' ? 'audio 🎙️' : 'archivo'}.`,
-      `Por ahora solo proceso texto. ¿En qué te puedo ayudar? 😊`,
+      `¡Hola! Recibí tu ${messageType === 'image' ? 'imagen 📷' : 'archivo'}.`,
+      `Por ahora solo proceso texto para darte una mejor asesoría. ¿En qué puedo ayudarte?`,
     ]);
   }
 
-  // ─── Flujo de captura de datos ───────────────────────────
+  // ─── FLUJO DE CAPTURA DE LEADS (VENTAS) ──────────────────────
   if (session.step === 'collecting_name') {
-    updateSession(phoneFrom, { name: messageText, step: 'collecting_query' });
+    updateSession(phoneFrom, { name: messageText, step: 'collecting_biz' });
     return buildResponse([
       `¡Mucho gusto, *${messageText}*! 😊`,
-      `¿Cuál es tu consulta o en qué te puedo ayudar?`,
+      `Para darte una idea de cómo la IA puede ayudarte: ¿Qué tipo de negocio tienes o qué proyecto quieres automatizar? (Ej: Academia de Trading, Tienda, Inmobiliaria...)`,
     ]);
   }
 
-  if (session.step === 'collecting_query') {
-    updateSession(phoneFrom, { query: messageText, step: 'done' });
-    const name = session.name || 'cliente';
-    // Aquí guardar lead en Supabase (manejado en webhook.js)
+  if (session.step === 'collecting_biz') {
+    updateSession(phoneFrom, { businessType: messageText, step: 'done' });
+    const name = session.name || 'emprendedor';
+    
+    // Este objeto dispara el guardado en Supabase en el webhook
     return {
-      type:    'lead_captured',
-      name:    session.name,
-      phone:   phoneFrom,
-      query:   messageText,
+      type: 'lead_captured',
+      name: name,
+      phone: phoneFrom,
+      query: `Negocio: ${messageText}`,
       message: buildResponse([
-        `✅ ¡Listo, *${name}*!`,
-        `Un asesor de *${biz.name}* se comunicará contigo pronto al *${phoneFrom}* para atender tu consulta.`,
+        `✅ ¡Excelente, *${name}*!`,
+        `He registrado tu interés en automatizar tu negocio de *${messageText}*.`,
+        `Un consultor experto de *SmartBot Perú* revisará tu caso y te escribirá pronto para darte una propuesta.`,
         ``,
-        `¿Hay algo más en que pueda ayudarte?`,
+        `¿Deseas saber algo más sobre nuestros Bots o Dashboards mientras tanto?`,
       ]).message,
     };
   }
 
-  // ─── Saludos ─────────────────────────────────────────────
-  if (/^(hola|buenos|buenas|hi|hey|saludos|ola|buen\s?d[ií]a|buen\s?tarde|buen\s?noch)/.test(msg)) {
+  // ─── SALUDOS E INICIO ────────────────────────────────────────
+  if (/^(hola|buenos|buenas|hi|hey|saludos|inicio|empezar)/.test(msg)) {
     updateSession(phoneFrom, { step: 'idle' });
-    const greeting = biz.greeting.replace('{business}', biz.name);
     return buildResponse([
-      greeting,
+      `¡Bienvenido a *SmartBot Perú*! 🤖🚀`,
+      `Soy tu asistente virtual impulsado por Inteligencia Artificial.`,
       ``,
-      `Puedes preguntarme sobre:`,
-      `📋 *Servicios* que ofrecemos`,
-      `⏰ *Horarios* de atención`,
-      `📍 *Ubicación* y cómo llegar`,
-      `💰 *Precios* y presupuestos`,
-      `👤 *Hablar con un asesor*`,
+      `Te ayudo a escalar tu negocio con:`,
+      `1️⃣ *Bots con IA:* Atención 24/7 que cierra ventas.`,
+      `2️⃣ *Dashboards:* Paneles privados para ver tus leads.`,
+      `3️⃣ *Trading:* Alertas y automatización de señales.`,
+      ``,
+      `¿De qué te gustaría recibir información hoy?`,
     ]);
   }
 
-  // ─── Horarios ────────────────────────────────────────────
-  if (/hora|horario|abierto|cuando atiend|atiend|disponib/.test(msg)) {
+  // ─── SERVICIOS ESPECÍFICOS ──────────────────────────────────
+  if (/trading|señales|mercado|cripto|bolsa/.test(msg)) {
     return buildResponse([
-      `⏰ *Horario de atención de ${biz.name}:*`,
+      `📈 *Automatización de Trading:*`,
+      `Desarrollamos bots que envían señales en tiempo real a tus clientes y analizan el mercado usando IA.`,
       ``,
-      biz.hours,
-      ``,
-      `¿Hay algo más en que te pueda ayudar?`,
+      `¿Te gustaría automatizar tu comunidad de trading? Escribe *"asesor"* para darte detalles.`,
     ]);
   }
 
-  // ─── Ubicación ───────────────────────────────────────────
-  if (/donde|ubic|direcci|c[oó]mo llegar|mapa|local/.test(msg)) {
-    if (biz.address) {
-      return buildResponse([
-        `📍 *Nos encontramos en:*`,
-        ``,
-        biz.address,
-        ``,
-        `¿Necesitas algo más?`,
-      ]);
-    }
-    return buildResponse([`📍 Contáctanos y te indicamos nuestra ubicación exacta.`]);
-  }
-
-  // ─── Teléfono / contacto ─────────────────────────────────
-  if (/tel[eé]fono|llamar|contacto|celular|n[uú]mero|whatsapp/.test(msg)) {
-    if (biz.phone) {
-      return buildResponse([
-        `📞 *Puedes contactarnos directamente al:*`,
-        ``,
-        `*${biz.phone}*`,
-        ``,
-        `¡Con gusto te atendemos!`,
-      ]);
-    }
-    return buildResponse([`📞 Escríbenos aquí mismo y te atendemos de inmediato. 😊`]);
-  }
-
-  // ─── Servicios ───────────────────────────────────────────
-  if (/servicio|ofrecen|qu[eé] hacen|qu[eé] venden|productos|men[uú]|carta/.test(msg)) {
-    if (biz.services && biz.services.length > 0) {
-      return buildResponse([
-        `🎯 *Servicios de ${biz.name}:*`,
-        ``,
-        ...biz.services.map(s => `• ${s.trim()}`),
-        ``,
-        `¿Te interesa alguno en particular?`,
-      ]);
-    }
+  if (/dashboard|panel|ver leads|donde veo/.test(msg)) {
     return buildResponse([
-      `Ofrecemos varios servicios. ¿Me puedes decir qué necesitas específicamente?`,
-    ]);
-  }
-
-  // ─── Precios ─────────────────────────────────────────────
-  if (/precio|costo|cu[aá]nto|vale|tarifa|cobran|presupuesto/.test(msg)) {
-    return buildResponse([
-      `💰 Los precios varían según el servicio.`,
+      `💻 *Dashboards Profesionales:*`,
+      `Todos tus contactos de WhatsApp se guardan automáticamente en un panel privado. ¡Nunca más pierdas un cliente en el chat!`,
       ``,
-      `¿Quieres que un asesor te prepare un presupuesto personalizado?`,
-      `Solo escribe *"quiero asesor"* y te contactamos. 😊`,
+      `¿Quieres ver una demo del panel? Escribe *"asesor"*.`,
     ]);
   }
 
-  // ─── Pedir asesor / humano ───────────────────────────────
-  if (/asesor|persona|humano|agente|hablar con|atenci[oó]n|quiero asesor/.test(msg)) {
+  // ─── PEDIR ASESOR (DISPARA CAPTURA) ──────────────────────────
+  if (/asesor|persona|humano|quiero|informacion|info|contratar|demo/.test(msg)) {
     updateSession(phoneFrom, { step: 'collecting_name' });
     return buildResponse([
-      `¡Con mucho gusto! 😊`,
-      `Para conectarte con un asesor de *${biz.name}*, necesito un dato rápido:`,
+      `¡Genial! 🚀 Me encantaría conectarte con nuestro equipo.`,
       ``,
       `¿Cuál es tu *nombre*?`,
     ]);
   }
 
-  // ─── Gracias / despedida ─────────────────────────────────
-  if (/gracias|muchas gracias|ok|listo|perfecto|chau|hasta luego|bye|adios/.test(msg)) {
-    updateSession(phoneFrom, { step: 'idle' });
-    return buildResponse([
-      `¡De nada! 😊 Fue un placer atenderte.`,
-      `Recuerda que estamos disponibles ${biz.hours}.`,
-      `¡Hasta pronto! 👋`,
-    ]);
-  }
-
-  // ─── Sí / no ─────────────────────────────────────────────
-  if (/^(s[ií]|no|claro|dale|por favor|ok|ninguno)$/.test(msg)) {
-    if (msg === 'no' || msg === 'ninguno') {
-      return buildResponse([`Entendido. Si necesitas algo más, aquí estaré. 😊`]);
-    }
-    // "sí" sin contexto → ofrecer asesor
-    updateSession(phoneFrom, { step: 'collecting_name' });
-    return buildResponse([`¡Perfecto! ¿Me puedes dar tu *nombre* para conectarte con un asesor?`]);
-  }
-
-  // ─── IA Gemini (si está configurada) ────────────────────
+  // ─── IA GEMINI (Para todo lo demás) ─────────────────────────
   if (BOT_CONFIG.ai.geminiKey) {
     try {
       const aiResponse = await callGemini(messageText, biz);
@@ -199,35 +130,28 @@ async function processMessage(phoneFrom, messageText, messageType = 'text') {
     }
   }
 
-  // ─── Respuesta genérica ──────────────────────────────────
   return buildResponse([
-    `Entiendo tu mensaje. 😊`,
+    `Interesante... 😊 ¿Me podrías dar más detalles?`,
     ``,
-    `Para darte la mejor atención, ¿me puedes decir qué necesitas?`,
-    ``,
-    `Escribe *"asesor"* si quieres hablar con alguien de nuestro equipo.`,
+    `O si prefieres hablar con un experto de *SmartBot Perú*, escribe *"asesor"*.`,
   ]);
 }
 
-// ─── Helper: construir respuesta ────────────────────────────
 function buildResponse(lines) {
-  return {
-    type:    'text',
-    message: lines.join('\n'),
-  };
+  return { type: 'text', message: lines.join('\n') };
 }
 
-// ─── Gemini AI ───────────────────────────────────────────────
+// ─── GEMINI IA: ENTRENAMIENTO DE VENTAS ───────────────────────
 async function callGemini(userMessage, biz) {
   const fetch = require('node-fetch');
 
-  const systemContext = `Eres el asistente virtual de WhatsApp de "${biz.name}".
-Horario: ${biz.hours}.
-Dirección: ${biz.address || 'No especificada'}.
-Servicios: ${biz.services.join(', ') || 'varios servicios'}.
-Responde en español, de forma amable y concisa (máximo 3 líneas).
-Usa emojis con moderación. Si no sabes algo, sugiere hablar con un asesor.
-NUNCA inventes precios ni información que no se te dio.`;
+  // Aquí configuramos el "Cerebro" de ventas
+  const systemContext = `Eres el asistente experto de "SmartBot Perú". 
+Tu objetivo es vender soluciones de automatización con IA y WhatsApp.
+Servicios: Bots inteligentes para negocios, Paneles de Leads (Dashboards) y Bots de Trading.
+Personalidad: Profesional, innovador y muy servicial. 
+REGLA DE ORO: Si el cliente parece interesado en comprar o quiere una demo, sugiérele escribir la palabra "asesor".
+Responde en español, máximo 3 líneas. Usa emojis de tecnología (🚀, 🤖, 📈).`;
 
   const response = await fetch(
     `https://generativelanguage.googleapis.com/v1beta/models/${BOT_CONFIG.ai.model}:generateContent?key=${BOT_CONFIG.ai.geminiKey}`,
@@ -242,13 +166,13 @@ NUNCA inventes precios ni información que no se te dio.`;
         }],
         generationConfig: {
           maxOutputTokens: BOT_CONFIG.ai.maxTokens,
-          temperature:     BOT_CONFIG.ai.temperature,
+          temperature: 0.7, // Un poco de creatividad para vender mejor
         },
       }),
     }
   );
 
-  if (!response.ok) throw new Error(`Gemini HTTP ${response.status}`);
+  if (!response.ok) throw new Error(`Gemini Error`);
   const data = await response.json();
   return data.candidates?.[0]?.content?.parts?.[0]?.text || null;
 }
