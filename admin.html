@@ -60,7 +60,8 @@
         async function loadLeads() {
             try {
                 // Usamos la API de Netlify que ya tienes configurada
-                const response = await fetch('/.netlify/functions/get-leads'); 
+                // Ahora puedes usar la ruta corta gracias a tu netlify.toml:
+                const response = await fetch('/api/leads');
                 const leads = await response.json();
                 
                 const table = document.getElementById('leads-table');
