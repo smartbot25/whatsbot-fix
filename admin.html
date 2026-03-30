@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Panel de Leads | SmartBot Perú</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        body { background-color: #0f172a; color: white; font-family: 'Inter', sans-serif; }
+        .card-blur { background: rgba(30, 41, 59, 0.7); backdrop-filter: blur(10px); border: 1px solid rgba(255, 255, 255, 0.1); }
+    </style>
+</head>
+<body class="p-4 md:p-10">
+
+    <div class="max-w-6xl mx-auto">
+        <div class="flex justify-between items-center mb-10">
+            <h1 class="text-3xl font-bold text-sky-400">Panel de Leads 📈</h1>
+            <a href="/" class="text-slate-400 hover:text-white text-sm">← Volver a la Web</a>
+        </div>
+
+        <div id="login-section" class="card-blur p-8 rounded-2xl max-w-md mx-auto text-center">
+            <p class="mb-4 text-slate-300">Ingresa tu clave de administrador:</p>
+            <input type="password" id="admin-pass" placeholder="Tu contraseña" class="w-full p-3 rounded-lg bg-slate-800 border border-slate-700 mb-4 focus:outline-none focus:border-sky-500 text-center">
+            <button onclick="checkAuth()" class="w-full bg-sky-600 hover:bg-sky-500 py-3 rounded-lg font-bold transition">Acceder al Panel</button>
+        </div>
+
+        <div id="data-section" class="hidden">
+            <div class="overflow-x-auto card-blur rounded-2xl">
+                <table class="w-full text-left border-collapse">
+                    <thead>
+                        <tr class="bg-slate-800/50 text-slate-400 uppercase text-xs tracking-wider">
+                            <th class="p-4">Fecha</th>
+                            <th class="p-4">Nombre</th>
+                            <th class="p-4">Teléfono</th>
+                            <th class="p-4">Interés / Negocio</th>
+                        </tr>
+                    </thead>
+                    <tbody id="leads-table" class="divide-y divide-slate-800">
+                        </tbody>
+                </table>
+            </div>
+            <p id="loading-msg" class="text-center mt-6 text-slate-500 italic">Cargando datos de Supabase...</p>
+        </div>
+    </div>
+
+    <script>
+        const CLAVE_CORRECTA = "edfix-admin-2025"; // Tu clave
+
+        function checkAuth() {
+            const pass = document.getElementById('admin-pass').value;
+            if (pass === CLAVE_CORRECTA) {
+                document.getElementById('login-section').classList.add('hidden');
+                document.getElementById('data-section').classList.remove('hidden');
+                loadLeads();
+            } else {
+                alert("❌ Clave incorrecta. Inténtalo de nuevo.");
+            }
+        }
+
+        async function loadLeads() {
+            try {
+                // Usamos la API de Netlify que ya tienes configurada
+                const response = await fetch('/.netlify/functions/get-leads'); 
+                const leads = await response.json();
+                
+                const table = document.getElementById('leads-table');
+                document.getElementById('loading-msg').classList.add('hidden');
+                
+                if (leads.length === 0) {
+                    table.innerHTML = `<tr><td colspan="4" class="p-10 text-center text-slate-500">No hay leads registrados todavía.</td></tr>`;
+                    return;
+                }
+
+                table.innerHTML = leads.map(l => `
+                    <tr class="hover:bg-slate-800/30 transition">
+                        <td class="p-4 text-xs text-slate-500">${new Date(l.created_at).toLocaleDateString()}</td>
+                        <td class="p-4 font-bold text-sky-100">${l.name}</td>
+                        <td class="p-4 text-emerald-400">${l.phone}</td>
+                        <td class="p-4 text-slate-300 text-sm">${l.query}</td>
+                    </tr>
+                `).join('');
+            } catch (err) {
+                console.error(err);
+                alert("Error cargando los leads. Revisa la consola.");
+            }
+        }
+    </script>
+</body>
+</html>
