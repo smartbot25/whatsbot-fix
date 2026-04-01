@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="es">
 <head>
@@ -26,14 +27,14 @@
                             <th class="px-6 py-4 font-bold">Fecha</th>
                             <th class="px-6 py-4 font-bold">WhatsApp</th>
                             <th class="px-6 py-4 font-bold">Nombre</th>
-                            <th class="px-6 py-4 font-bold">Interés</th>
+                            <th class="px-6 py-4 font-bold">Consulta</th>
                             <th class="px-6 py-4 font-bold">Estado</th>
                         </tr>
                     </thead>
                     <tbody id="leads-table" class="divide-y divide-slate-700">
                         <tr>
                             <td colspan="5" class="px-6 py-10 text-center text-slate-500 italic">
-                                Ingresa la clave para cargar los leads de la base de datos...
+                                Ingresa la clave para cargar los leads de whatsbot_leads...
                             </td>
                         </tr>
                     </tbody>
@@ -52,11 +53,10 @@
                 return;
             }
 
-            tableBody.innerHTML = '<tr><td colspan="5" class="px-6 py-10 text-center text-sky-400 animate-pulse">Cargando datos desde Netlify...</td></tr>';
+            tableBody.innerHTML = '<tr><td colspan="5" class="px-6 py-10 text-center text-sky-400 animate-pulse">Conectando con Netlify...</td></tr>';
 
             try {
-                // ✅ RUTA CORREGIDA PARA NETLIFY FUNCTIONS
-                // Usamos la redirección que pusimos en netlify.toml o la ruta directa
+                // ✅ SOLUCIÓN: Ruta específica para Netlify Functions
                 const response = await fetch('/.netlify/functions/leads', {
                     headers: {
                         'Authorization': password
@@ -64,20 +64,19 @@
                 });
 
                 if (!response.ok) {
-                    if (response.status === 401) throw new Error('Clave incorrecta');
-                    throw new Error('Error de conexión con el servidor');
+                    throw new Error(response.status === 401 ? 'Clave incorrecta' : 'Error de conexión');
                 }
 
                 const leads = await response.json();
 
                 if (!leads || leads.length === 0) {
-                    tableBody.innerHTML = '<tr><td colspan="5" class="px-6 py-10 text-center text-slate-400">No hay leads registrados aún.</td></tr>';
+                    tableBody.innerHTML = '<tr><td colspan="5" class="px-6 py-10 text-center text-slate-400">No hay leads registrados en whatsbot_leads.</td></tr>';
                     return;
                 }
 
                 tableBody.innerHTML = '';
                 leads.forEach(lead => {
-                    // Ajustamos los nombres de los campos según tu tabla de Supabase
+                    // Mapeo exacto de los campos de tu tabla whatsbot_leads
                     const row = `
                         <tr class="hover:bg-slate-700/50 transition border-b border-slate-700">
                             <td class="px-6 py-4 text-sm text-slate-400">${new Date(lead.created_at).toLocaleDateString()}</td>
@@ -85,7 +84,7 @@
                             <td class="px-6 py-4 text-sm">${lead.name || 'Sin nombre'}</td>
                             <td class="px-6 py-4 text-sm text-slate-300">${lead.query || lead.interest || 'Pendiente'}</td>
                             <td class="px-6 py-4">
-                                <span class="px-2 py-1 bg-green-900/30 text-green-400 text-xs rounded-full border border-green-800">Nuevo</span>
+                                <span class="px-2 py-1 bg-green-900/30 text-green-400 text-xs rounded-full border border-green-800">WhatsApp</span>
                             </td>
                         </tr>
                     `;
