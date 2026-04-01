@@ -5,6 +5,9 @@
 
 const BOT_CONFIG = require('../config/bot-config');
 
+// SOLUCIÓN AL ERROR: Importación compatible con Netlify
+const fetch = (...args) => import('node-fetch').then(({default: fetch}) => fetch(...args));
+
 const sessions = new Map();
 
 function getSession(phone) {
@@ -59,7 +62,6 @@ async function processMessage(phoneFrom, messageText, messageType = 'text') {
     updateSession(phoneFrom, { businessType: messageText, step: 'done' });
     const name = session.name || 'emprendedor';
     
-    // Este objeto dispara el guardado en Supabase en el webhook
     return {
       type: 'lead_captured',
       name: name,
@@ -121,7 +123,7 @@ async function processMessage(phoneFrom, messageText, messageType = 'text') {
   }
 
   // ─── IA GEMINI (Para todo lo demás) ─────────────────────────
-  if (BOT_CONFIG.ai.geminiKey) {
+  if (BOT_CONFIG.gemini.apiKey || BOT_CONFIG.ai.geminiKey) {
     try {
       const aiResponse = await callGemini(messageText, biz);
       if (aiResponse) return buildResponse([aiResponse]);
@@ -143,38 +145,36 @@ function buildResponse(lines) {
 
 // ─── GEMINI IA: ENTRENAMIENTO DE VENTAS ───────────────────────
 async function callGemini(userMessage, biz) {
-  const fetch = require('node-fetch');
+  // Configuración de la URL basada en tus variables
+  const apiKey = BOT_CONFIG.gemini.apiKey || BOT_CONFIG.ai.geminiKey;
+  const model = BOT_CONFIG.ai.model || 'gemini-1.5-flash';
 
-  // Aquí configuramos el "Cerebro" de ventas
   const systemContext = `Eres el asistente experto de "SmartBot Perú". 
 Tu objetivo es vender soluciones de automatización con IA y WhatsApp.
 Servicios: Bots inteligentes para negocios, Paneles de Leads (Dashboards) y Bots de Trading.
-Personalidad: Profesional, innovador y muy servicial. 
-REGLA DE ORO: Si el cliente parece interesado en comprar o quiere una demo, sugiérele escribir la palabra "asesor".
-Responde en español, máximo 3 líneas. Usa emojis de tecnología (🚀, 🤖, 📈).`;
+Personalidad: Profesional, innovador y muy servicial. Usa emojis 🚀, 🤖, 📈.
+Responde siempre de forma breve (máximo 3 líneas).`;
 
-  const response = await fetch(
-    `https://generativelanguage.googleapis.com/v1beta/models/${BOT_CONFIG.ai.model}:generateContent?key=${BOT_CONFIG.ai.geminiKey}`,
-    {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        contents: [{
-          parts: [{
-            text: `${systemContext}\n\nCliente pregunta: ${userMessage}`,
+  try {
+    const response = await fetch(
+      `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${apiKey}`,
+      {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          contents: [{
+            parts: [{ text: `${systemContext}\n\nCliente pregunta: ${userMessage}` }],
           }],
-        }],
-        generationConfig: {
-          maxOutputTokens: BOT_CONFIG.ai.maxTokens,
-          temperature: 0.7, // Un poco de creatividad para vender mejor
-        },
-      }),
-    }
-  );
+        }),
+      }
+    );
 
-  if (!response.ok) throw new Error(`Gemini Error`);
-  const data = await response.json();
-  return data.candidates?.[0]?.content?.parts?.[0]?.text || null;
+    const data = await response.json();
+    return data.candidates?.[0]?.content?.parts?.[0]?.text || null;
+  } catch (err) {
+    console.error('[Gemini Call Error]', err.message);
+    return null;
+  }
 }
 
 module.exports = { processMessage, getSession, updateSession };
