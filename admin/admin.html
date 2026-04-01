@@ -52,35 +52,38 @@
                 return;
             }
 
-            tableBody.innerHTML = '<tr><td colspan="5" class="px-6 py-10 text-center text-sky-400 animate-pulse">Cargando datos desde Vercel...</td></tr>';
+            tableBody.innerHTML = '<tr><td colspan="5" class="px-6 py-10 text-center text-sky-400 animate-pulse">Cargando datos desde Netlify...</td></tr>';
 
             try {
-                // RUTA CORREGIDA PARA VERCEL (CARPETA /API)
-                const response = await fetch('/api/leads', {
+                // ✅ RUTA CORREGIDA PARA NETLIFY FUNCTIONS
+                // Usamos la redirección que pusimos en netlify.toml o la ruta directa
+                const response = await fetch('/.netlify/functions/leads', {
                     headers: {
                         'Authorization': password
                     }
                 });
 
                 if (!response.ok) {
-                    throw new Error('Clave incorrecta o error de conexión');
+                    if (response.status === 401) throw new Error('Clave incorrecta');
+                    throw new Error('Error de conexión con el servidor');
                 }
 
                 const leads = await response.json();
 
-                if (leads.length === 0) {
+                if (!leads || leads.length === 0) {
                     tableBody.innerHTML = '<tr><td colspan="5" class="px-6 py-10 text-center text-slate-400">No hay leads registrados aún.</td></tr>';
                     return;
                 }
 
                 tableBody.innerHTML = '';
                 leads.forEach(lead => {
+                    // Ajustamos los nombres de los campos según tu tabla de Supabase
                     const row = `
                         <tr class="hover:bg-slate-700/50 transition border-b border-slate-700">
                             <td class="px-6 py-4 text-sm text-slate-400">${new Date(lead.created_at).toLocaleDateString()}</td>
-                            <td class="px-6 py-4 font-medium text-sky-400">${lead.wa_id}</td>
+                            <td class="px-6 py-4 font-medium text-sky-400">${lead.phone || lead.wa_id || 'S/N'}</td>
                             <td class="px-6 py-4 text-sm">${lead.name || 'Sin nombre'}</td>
-                            <td class="px-6 py-4 text-sm text-slate-300">${lead.interest || 'Pendiente'}</td>
+                            <td class="px-6 py-4 text-sm text-slate-300">${lead.query || lead.interest || 'Pendiente'}</td>
                             <td class="px-6 py-4">
                                 <span class="px-2 py-1 bg-green-900/30 text-green-400 text-xs rounded-full border border-green-800">Nuevo</span>
                             </td>
