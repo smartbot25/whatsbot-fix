@@ -3,87 +3,98 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>SmartBot Perú | Inteligencia Artificial para tu Negocio</title>
+    <title>SmartBot Perú - Panel de Leads</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.min.css">
-    <style>
-        body { background-color: #0f172a; color: white; font-family: 'Inter', sans-serif; }
-        .gradient-text {
-            background: linear-gradient(90deg, #38bdf8, #818cf8);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-        }
-        .card-blur {
-            background: rgba(30, 41, 59, 0.7);
-            backdrop-filter: blur(10px);
-            border: 1px solid rgba(255, 255, 255, 0.1);
-        }
-    </style>
+    <link rel="icon" href="https://smartbotperu.com/logo.png">
 </head>
-<body>
+<body class="bg-slate-900 text-white font-sans min-h-screen p-4">
 
-    <nav class="flex justify-between items-center p-6 max-w-7xl mx-auto">
-        <div class="text-2xl font-bold tracking-tighter">
-            <span class="text-sky-400">SmartBot</span><span class="text-white">Perú</span>
-        </div>
-        <div>
-             <a href="/admin.html" class="text-sm text-slate-400 hover:text-white transition">Acceso Clientes</a>
-        </div>
-    </nav>
-
-    <header class="py-20 px-6 text-center max-w-4xl mx-auto">
-        <h1 class="text-5xl md:text-7xl font-extrabold mb-6">
-            Tu Negocio Atendido por <span class="gradient-text">IA 24/7</span>
-        </h1>
-        <p class="text-slate-400 text-lg md:text-xl mb-10 leading-relaxed">
-            Automatizamos tu WhatsApp con Inteligencia Artificial de Google. 
-            Captura leads, responde dudas y cierra ventas mientras duermes.
-        </p>
-        <div class="flex flex-col md:flex-row gap-4 justify-center">
-            <a href="https://wa.me/15551876287" class="bg-sky-500 hover:bg-sky-400 text-white font-bold py-4 px-8 rounded-full transition transform hover:scale-105 shadow-lg shadow-sky-500/20">
-                <i class="fab fa-whatsapp mr-2"></i> Probar Demo Gratis
-            </a>
-            <a href="#servicios" class="bg-slate-800 hover:bg-slate-700 text-white font-bold py-4 px-8 rounded-full border border-slate-700 transition">
-                Ver Servicios
-            </a>
-        </div>
-    </header>
-
-    <section id="servicios" class="py-20 px-6 max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-3 gap-8">
-        <div class="card-blur p-8 rounded-3xl">
-            <div class="w-12 h-12 bg-sky-500/10 rounded-xl flex items-center justify-center mb-6 text-sky-400 text-2xl">
-                <i class="fas fa-robot"></i>
+    <div class="max-w-6xl mx-auto">
+        <header class="flex justify-between items-center mb-8 border-b border-slate-700 pb-4">
+            <h1 class="text-3xl font-bold text-sky-400">SmartBot Perú 📈</h1>
+            <div id="auth-section" class="flex gap-2">
+                <input type="password" id="admin-pass" placeholder="Clave de acceso" class="bg-slate-800 border border-slate-600 rounded px-3 py-1 text-sm focus:outline-none focus:ring-2 focus:ring-sky-500">
+                <button onclick="loadLeads()" class="bg-sky-600 hover:bg-sky-500 px-4 py-1 rounded text-sm font-bold transition">Acceder</button>
             </div>
-            <h3 class="text-xl font-bold mb-4">Bots con IA Real</h3>
-            <p class="text-slate-400 text-sm leading-relaxed">
-                No son opciones de menú tontas. Usamos Gemini de Google para que el bot entienda y razone como un humano.
-            </p>
-        </div>
+        </header>
 
-        <div class="card-blur p-8 rounded-3xl">
-            <div class="w-12 h-12 bg-indigo-500/10 rounded-xl flex items-center justify-center mb-6 text-indigo-400 text-2xl">
-                <i class="fas fa-chart-line"></i>
+        <div class="bg-slate-800 rounded-xl shadow-2xl overflow-hidden border border-slate-700">
+            <div class="overflow-x-auto">
+                <table class="w-full text-left border-collapse">
+                    <thead>
+                        <tr class="bg-slate-700 text-sky-300 uppercase text-xs tracking-wider">
+                            <th class="px-6 py-4 font-bold">Fecha</th>
+                            <th class="px-6 py-4 font-bold">WhatsApp</th>
+                            <th class="px-6 py-4 font-bold">Nombre</th>
+                            <th class="px-6 py-4 font-bold">Consulta</th>
+                            <th class="px-6 py-4 font-bold">Estado</th>
+                        </tr>
+                    </thead>
+                    <tbody id="leads-table" class="divide-y divide-slate-700">
+                        <tr>
+                            <td colspan="5" class="px-6 py-10 text-center text-slate-500 italic">
+                                Ingresa la clave para cargar los leads de whatsbot_leads...
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
             </div>
-            <h3 class="text-xl font-bold mb-4">Alertas de Trading</h3>
-            <p class="text-slate-400 text-sm leading-relaxed">
-                Automatiza el envío de señales y análisis de mercado directamente al WhatsApp de tus suscriptores.
-            </p>
         </div>
+    </div>
 
-        <div class="card-blur p-8 rounded-3xl">
-            <div class="w-12 h-12 bg-emerald-500/10 rounded-xl flex items-center justify-center mb-6 text-emerald-400 text-2xl">
-                <i class="fas fa-database"></i>
-            </div>
-            <h3 class="text-xl font-bold mb-4">Dashboard de Leads</h3>
-            <p class="text-slate-400 text-sm leading-relaxed">
-                Acceso a un panel privado para gestionar todos los contactos capturados por el bot en tiempo real.
-            </p>
-        </div>
-    </section>
+    <script>
+        async function loadLeads() {
+            const password = document.getElementById('admin-pass').value;
+            const tableBody = document.getElementById('leads-table');
 
-    <footer class="py-10 border-t border-slate-800 text-center">
-        <p class="text-slate-500 text-sm">© 2026 SmartBot Perú. Desarrollado con ❤️ en Lima.</p>
-    </footer>
+            if (!password) {
+                alert("Por favor, ingresa la clave de administrador.");
+                return;
+            }
 
+            tableBody.innerHTML = '<tr><td colspan="5" class="px-6 py-10 text-center text-sky-400 animate-pulse">Conectando con Netlify...</td></tr>';
+
+            try {
+                // ✅ SOLUCIÓN: Ruta específica para Netlify Functions
+                const response = await fetch('/.netlify/functions/leads', {
+                    headers: {
+                        'Authorization': password
+                    }
+                });
+
+                if (!response.ok) {
+                    throw new Error(response.status === 401 ? 'Clave incorrecta' : 'Error de conexión');
+                }
+
+                const leads = await response.json();
+
+                if (!leads || leads.length === 0) {
+                    tableBody.innerHTML = '<tr><td colspan="5" class="px-6 py-10 text-center text-slate-400">No hay leads registrados en whatsbot_leads.</td></tr>';
+                    return;
+                }
+
+                tableBody.innerHTML = '';
+                leads.forEach(lead => {
+                    // Mapeo exacto de los campos de tu tabla whatsbot_leads
+                    const row = `
+                        <tr class="hover:bg-slate-700/50 transition border-b border-slate-700">
+                            <td class="px-6 py-4 text-sm text-slate-400">${new Date(lead.created_at).toLocaleDateString()}</td>
+                            <td class="px-6 py-4 font-medium text-sky-400">${lead.phone || lead.wa_id || 'S/N'}</td>
+                            <td class="px-6 py-4 text-sm">${lead.name || 'Sin nombre'}</td>
+                            <td class="px-6 py-4 text-sm text-slate-300">${lead.query || lead.interest || 'Pendiente'}</td>
+                            <td class="px-6 py-4">
+                                <span class="px-2 py-1 bg-green-900/30 text-green-400 text-xs rounded-full border border-green-800">WhatsApp</span>
+                            </td>
+                        </tr>
+                    `;
+                    tableBody.innerHTML += row;
+                });
+
+            } catch (error) {
+                console.error('Error:', error);
+                tableBody.innerHTML = `<tr><td colspan="5" class="px-6 py-10 text-center text-red-400">❌ Error: ${error.message}</td></tr>`;
+            }
+        }
+    </script>
 </body>
 </html>
