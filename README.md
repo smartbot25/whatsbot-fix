@@ -88,5 +88,5 @@ Meta App → WhatsApp → Configuration → Webhook:
 
 ---
 
-*WhatsBot-Fix by Ed-Fix Digital Suite*
+*SmartBot IA | by Edgar*
 
