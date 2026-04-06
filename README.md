@@ -1,5 +1,5 @@
 # 📱 WhatsBot-Fix — Bot de WhatsApp con Meta API
-**Ed-Fix Digital Suite | by Edgar**
+**SnartBot IA| by Edgar**
 
 ---
 
